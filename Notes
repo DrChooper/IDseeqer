@@ -1,0 +1,3 @@
+Before running the blast the sequence columns need to be cleaned from white spaces and breaks:
+update table set seq_prot = replace(seq_prot,"\n","");
+
