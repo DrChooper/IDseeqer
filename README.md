@@ -1,0 +1,2 @@
+# IDseeqer
+IDseeqer is a program that is being developed to seek the peptide or nucleotide sequence to an ID. The retrieval of mixed IDs tries a variety of databases for sequence information including some archived collections. The sequence is being converted to a barcode in order to enable cataloguing data collections associated with such ids. The sequenced retrieved can be sent to blast databases and connected to current genome assemblies in Ensembl.
