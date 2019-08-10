@@ -1,0 +1,7 @@
+The database-table is queried differently depending on the protocols
+and thus I don't know how we are going to harmonize it.
+
+For example:
+errcol != 2 for UniProt (different from 2)
+errcol != 3 for NCBI (different from 3)
+errcol > 1 for Gramene (greater than 1)
