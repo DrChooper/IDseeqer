@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text, select, MetaData
 
 import time
+import sys
 
 import settings
 import Gramene_Retrieval as gramene
@@ -24,8 +25,11 @@ class Parameters:
 
 if __name__ == "__main__" : 
 
-	settings.init()
-	print(settings)
+	connection_status = settings.init()
+	if (connection_status != 0) : # Error connecting to database
+		print("\n> CAN NOT CONNECT TO DATABASE : ", connection_status )
+		sys.exit()
+	
 
 	# Define Run Variables
 	### define errors

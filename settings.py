@@ -6,14 +6,15 @@ def init() :
 	global engine
 	#global id_paper1
 	#Set up connection to database
+	try :
+		engine = create_engine('mysql+pymysql://root@localhost/crop_pal2v2')
+		#engine = create_engine('mysql+pymysql://root:PASSWORD@localhost/DATABASE')#Enter your own password and database
+		# test connection
+		engine.execute(text("show variables like \"ver%\"")).fetchall()
 
-	#engine = create_engine('mysql+pymysql://root@localhost/crop_pal2v2')
-	engine = create_engine('mysql+pymysql://root:PASSWORD@localhost/DATABASE')#Enter your own password and database
-	# test connection
-	engine.execute(text("show variables like \"ver%\"")).fetchall()
-
-	#extract the table information
-	
+		#extract the table information
+	except Exception as e :
+		return e
 	meta = MetaData(bind=engine)
 	meta.reflect()
 	meta.tables.keys()
@@ -21,3 +22,5 @@ def init() :
 
 	#define the table
 	gfp_input_2019 = meta.tables['test_idseeqer_temp']
+	
+	return 0
