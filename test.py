@@ -1,1 +1,0 @@
-This is just to test that my git is configured correctly for this repo.
