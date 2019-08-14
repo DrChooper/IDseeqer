@@ -15,14 +15,15 @@ def getgramene(pid, session=None):
     return SeqIO.read(StringIO(resp.text), format = "fasta")
 	
 #update the protein sequences in the databae
-def updatedb_prot(id_paper1, rec):
-    u = settings.gfp_input_2019.update()
-    u = u.values({settings.gfp_input_2019.c.seq_prot: str(rec.seq).upper()})
-    u = u.where(settings.gfp_input_2019.c.id_paper1 == id_paper1)
-    u = u.where(settings.gfp_input_2019.c.seq_prot == None)
+def updatedb_prot(id_paper1, rec, seq_source):
+	u = settings.gfp_input_2019.update()
+	u = u.values({settings.gfp_input_2019.c.seq_prot: str(rec.seq).upper()})
+	u = u.values({settings.gfp_input_2019.c.seq_source: seq_source})
+	u = u.where(settings.gfp_input_2019.c.id_paper1 == id_paper1)
+	u = u.where(settings.gfp_input_2019.c.seq_prot == None)
 
-    proxy = settings.engine.execute(u)
-    return proxy.rowcount
+	proxy = settings.engine.execute(u)
+	return proxy.rowcount
 
 def updateerr(id_paper1, num):
     u = settings.gfp_input_2019.update()
@@ -33,18 +34,18 @@ def updateerr(id_paper1, num):
     return proxy.rowcount
 
 def updateresult(id_paper1, source):
-    u = settings.gfp_input_2019.update()
-    u = u.values({settings.gfp_input_2019.c.id_type: source})
-    u = u.where(settings.gfp_input_2019.c.id_paper1 == id_paper1)
+	u = settings.gfp_input_2019.update()
+	u = u.values({settings.gfp_input_2019.c.id_type: source})
+	u = u.where(settings.gfp_input_2019.c.id_paper1 == id_paper1)
 
-    proxy = settings.engine.execute(u)
-    return proxy.rowcount
+	proxy = settings.engine.execute(u)
+	return proxy.rowcount
 
 
 def search_id (id_paper1, gramene_params) :
 	try:
 		rec = getgramene(id_paper1)
-		found = updatedb_prot(id_paper1, rec)
+		found = updatedb_prot(id_paper1, rec, gramene_params.seq_source)
 		print(id_paper1, 'updated', found, 'rows')
 		#time.sleep(gramene_params.retrieval_delay)
 		updateresult(id_paper1,"ensemble")
