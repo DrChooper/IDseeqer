@@ -47,14 +47,14 @@ def search_id (id_paper1, gramene_params) :
 		rec = getgramene(id_paper1)
 		found = updatedb_prot(id_paper1, rec, gramene_params.seq_source)
 		print(id_paper1, 'updated', found, 'rows')
+		#updateresult(id_paper1,"ensemble")
 		#time.sleep(gramene_params.retrieval_delay)
-		updateresult(id_paper1,"ensemble")
-		return 0
+		return True
 	except Exception as e:
 		print('failed for:',id_paper1, e)
 		updateerr(id_paper1, gramene_params.ensembl_err)
 		
-		return -1
+		return False
 
 		
 

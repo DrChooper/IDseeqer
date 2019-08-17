@@ -42,9 +42,9 @@ def search_id (id_paper1, ncbi_params) :
 		found = updatedb_prot(id_paper1, rec, ncbi_params.seq_source)
 		print(id_paper1, 'updated', found, 'rows')
 		#time.sleep(ncbi_params.retrieval_delay)
-		return 0
+		return True
 	except Exception as e:
 		print('failed for:',id_paper1, e)
 		updateerr(id_paper1, ncbi_params.ncbi_prot_err)
-		return -1
+		return False
 

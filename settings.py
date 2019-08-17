@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine, text, MetaData
 
-host = "localhost" # or "127.0.0.1"
-database_name = "crop_pal2v2"
-database_user = "root"
-database_password = ""
-table_name = "test_idseeqer_temp"
+# host = "localhost" # or "127.0.0.1"
+# database_name = "crop_pal2v2"
+# database_user = "root"
+# database_password = ""
+# table_name = "test_idseeqer_temp"
 
 class Parameters:
 	chunk = 100000 #how many ids in the run limit
@@ -20,7 +20,7 @@ class Parameters:
 	rap_err = 20
 	seq_source = "gramene"
 
-def init() :
+def init(args) :
 	global gfp_input_2019	
 	global engine
 	global gramene_params
@@ -28,7 +28,16 @@ def init() :
 	global ncbiprot_params
 	global ncbinucl_params
 	global rap_params
+	global uniparc_params
 	
+	
+	host = args[0]
+	database_name = args[1]
+	database_user = args[2]
+	database_password = args[3]
+	table_name = args[4]
+	
+		
 	#Set up connection to database
 	try :
 		conn_string = "mysql+pymysql://" + database_user + ":" + database_password + "@" + host + "/" + database_name
@@ -96,12 +105,37 @@ def init() :
 	rap_params.rap_err = 20
 	rap_params.seq_source = "rap"
 	
+	ncbinucl_params = Parameters()
+	ncbinucl_params.chunk = 10000 #how many ids in the run limit
+	ncbinucl_params.retrieval_delay = 2 #time break after successful retrieval in seconds
+	ncbinucl_params.error_delay = 5 #time break after error in seconds
+	ncbinucl_params.max_fail=  500
+	ncbinucl_params.fail_num = 500
+	ncbinucl_params.ncbi_nuc_err = 10
+	ncbinucl_params.rap_err = 20
+	ncbinucl_params.uniprot_err = 2
+	ncbinucl_params.ncbi_prot_err = 3
+	ncbinucl_params.ensembl_err = 4
+	ncbinucl_params.uniparc_err = 5
+	ncbinucl_params.err_status = 10 #where to start sending the sequence?
+	ncbinucl_params.seq_source = "ncbi_nucl"
+	
+	uniparc_params = Parameters()
+	uniparc_params.chunk = 10000 #how many ids in the run limit
+	uniparc_params.retrieval_delay = 2 #time break after successful retrieval in seconds
+	uniparc_params.error_delay = 5 #time break after error in seconds
+	uniparc_params.max_fail=  500
+	uniparc_params.fail_num = 500
+	uniparc_params.ncbi_nuc_err = 10
+	uniparc_params.rap_err = 20
+	uniparc_params.uniprot_err = 2
+	uniparc_params.ncbi_prot_err = 3
+	uniparc_params.ensembl_err = 4
+	uniparc_params.uniparc_err = 5
+	uniparc_params.err_status = 10 #where to start sending the sequence?
+	uniparc_params.seq_source = "uniparc"
+	
 
 	
 	return 0
 	
-def add( p, r ):
-	return (p + r)
-
-def multiply( p, r ):
-	return (p*r)
