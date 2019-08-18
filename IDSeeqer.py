@@ -166,9 +166,14 @@ def Get_Inputs() :
 	
 	#root.protocol("WM_DELETE_WINDOW", Cancel(root)) # Catch the close (X) button
 	
-	dirpath = os.getcwd()
-	imgicon = tk.PhotoImage(file= dirpath + '/img/icon2.gif')
-	root.tk.call('wm', 'iconphoto', root._w, imgicon)  
+	
+	try : 
+		dirpath = os.getcwd()
+		imgicon = tk.PhotoImage(file= dirpath + '/img/icon2.gif')
+		root.tk.call('wm', 'iconphoto', root._w, imgicon)
+	except Exception :
+		pass
+		
 	root.mainloop()
 	
 
