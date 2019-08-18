@@ -15,6 +15,7 @@ from sqlalchemy import create_engine, text, select, MetaData
 import ast
 import time
 import sys
+import os
 
 import settings
 
@@ -103,11 +104,12 @@ def makeform(root, fields):
 		elif (counter == 4) :
 			ent.insert(0, "")
 			ent.config(show = "") # Use show = "*" to display * in password field
+			ent.focus()
 		elif (counter == 5) :
 			ent.insert(0, "test_idseeqer_temp")
 			
 		row.pack(side=tk.TOP, padx=5, pady=10)
-		#row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=15)
+		#row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=10)
 		lab.pack(side=tk.LEFT)
 		ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 		entries[field] = ent
@@ -115,7 +117,7 @@ def makeform(root, fields):
 	row = tk.Frame(root)
 	lab = tk.Label(row, width=13, text="Retrieval Delay:", anchor = 'w')
 	ent = tk.Entry(row, width=50)
-	ent.insert(0, 2)
+	ent.insert(0, "2")
 	row.pack(side=tk.TOP, padx=5, pady=15)
 	lab.pack(side=tk.LEFT)
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
@@ -143,8 +145,8 @@ def Get_Inputs() :
 	screen_height = root.winfo_screenheight()
 
 	# calculate position x and y coordinates
-	x = (screen_width/2) - (width/2)
-	y = (screen_height/2) - (height/2)
+	x = ( (screen_width - width) /2)
+	y = ( (screen_height - height) /2)
 
 	root.geometry('%dx%d+%d+%d' % (width, height, x, y)) # Windows width, height and position on screen.
 	root.title('IDSeeqer - [Input Parameters]')
@@ -163,6 +165,10 @@ def Get_Inputs() :
 	root.bind('<Return>', (lambda e=ents, b1=b1: b1.invoke()))
 	
 	#root.protocol("WM_DELETE_WINDOW", Cancel(root)) # Catch the close (X) button
+	
+	dirpath = os.getcwd()
+	imgicon = tk.PhotoImage(file= dirpath + '/img/icon2.gif')
+	root.tk.call('wm', 'iconphoto', root._w, imgicon)  
 	root.mainloop()
 	
 
@@ -262,16 +268,16 @@ if __name__ == "__main__" :
 		
 		print("\n>>> Searching Item {} out of {}.".format(counter, total))
 	
-		for func in function_names :
+		for fun in function_names :
 			
-			print("> Searching '{}' ...".format(display_names[func].upper()))
-			if( Run_Function(func, id_paper1, function_params[func]) ) :
+			print("> Searching '{}' ...".format(display_names[fun].upper()))
+			if( Run_Function(fun, id_paper1, function_params[fun]) ) :
 				
 				# func is the last function in list where search was successful
 				# Remove the list
-				function_names.remove(func)
+				function_names.remove(fun)
 				# Now insert it at the beginning of the list.
-				function_names.insert(0, func)
+				function_names.insert(0, fun)
 				
 				time.sleep(delay) # Wait for delay seconds after successful retrieval
 				break 
