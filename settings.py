@@ -4,7 +4,7 @@ host = "localhost" # or "127.0.0.1"
 database_name = "crop_pal2v2"
 database_user = "root"
 database_password = ""
-table_name = "test_idseeqer_temp"
+table_name = "test_IDseeqer_temp"
 
 class Parameters:
 	chunk = 100000 #how many ids in the run limit
