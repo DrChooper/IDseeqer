@@ -40,9 +40,9 @@ def search_id (id_paper1, uniprot_params) :
 		found = updatedb_prot(id_paper1, rec, uniprot_params.seq_source)
 		print(id_paper1, 'updated', found, 'rows')
 		#time.sleep(uniprot_params.retrieval_delay)
-		return 0
+		return True
 	except Exception as e:
 		print('failed for:',id_paper1, e)
 		updateerr(id_paper1, uniprot_params.uniprot_err)
-		return -1
+		return False
 		

@@ -2,29 +2,23 @@ from io import StringIO
 import requests
 from Bio import SeqIO
 
-from lxml.html import parse
-
 import time
 
 import settings
 
-
-
-    
-#find protein sequence from ID
-def getrap(name, session=None):
-    resp = requests.get(
-        "https://rapdb.dna.affrc.go.jp/viewer/gbrowse_details/irgsp1",
-         params=dict(name=name)
+#find nucleotide sequence from ID (if no entry in protein database)
+def getncbi_nuc(pid, session=None):
+    if isinstance(pid, (list, set)):
+        pid = ",".join(str(s) for s in pid)
+    resp = (session or requests).get(
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+        params=dict(id=pid, db="nucleotide", rettype="gb", retmode="text"),
     )
-    r = parse(StringIO(resp.text))
-    r = r.getroot()
-    t = ''.join(r.xpath('.//pre/text()'))
-    rec = list(SeqIO.parse(StringIO(t), format="fasta"))[0]
-    return rec 
-    
-  
-#UPDATE FUNCTION
+
+    return SeqIO.read(StringIO(resp.text), format="gb")
+
+
+#UPDATE
 #update the nucleotide sequences in the databae
 def updatedb_nucl(id_paper1, rec, seq_source):
 	u = settings.gfp_input_2019.update()
@@ -36,6 +30,7 @@ def updatedb_nucl(id_paper1, rec, seq_source):
 	proxy = settings.engine.execute(u)
 	return proxy.rowcount
 
+
 def updateerr(id_paper1, num):
     u = settings.gfp_input_2019.update()
     u = u.values({settings.gfp_input_2019.c.errcol: num})
@@ -45,17 +40,16 @@ def updateerr(id_paper1, num):
     return proxy.rowcount
 	
 
-def search_id (id_paper1, rap_params) :
-
+#Searching the NCBI Nucleotide database
+def search_id (id_paper1, ncbinucl_params) :
 	try:
-		rec = getrap(id_paper1)
-		found = updatedb_nucl(id_paper1, rec, rap_params.seq_source)
+		rec = getncbi_nuc(id_paper1)
+		found = updatedb_nucl(id_paper1, rec, ncbinucl_params.seq_source)
 		print(id_paper1, 'updated', found, 'rows')
-		#time.sleep(rap_params.retrieval_delay)
+		#time.sleep(retrieval_delay)
 		return True
 	except Exception as e:
 		print('failed for:',id_paper1, e)
-		updateerr(id_paper1, rap_params.rap_err)
+		updateerr(id_paper1, ncbinucl_params.ncbi_nuc_err)
 
 		return False
-		
