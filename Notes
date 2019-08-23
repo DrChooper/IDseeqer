@@ -1,3 +1,44 @@
 Before running the blast the sequence columns need to be cleaned from white spaces and breaks:
 update table set seq_prot = replace(seq_prot,"\n","");
 
+
+CMHooper_RUN_IDseeqer notebook:
+I left it as is, there was some <<<< symbols in there that caused the Syntax error so I commented them out in the retrospective scripts.
+
+
+IDseeqer_Main.ipynb
+When I tried running a new data file I ran into the problem of not getting past the 200 Fail Max. I haven't had a bad connection so maybe it would be better if there was a default setting of max_fail = len(res). If the user wants to set the fail manually I would suggest a global fail_num in the settings that can be changed once. (I changed all the once I found and however the one that mattered wasn't amongst them
+Also:
+I am not sure about the whole password in the engine thing. Would be better to build in something like:
+import getpass
+password = getpass.getpass()
+
+Which then asks for the password and then encrypts the thing for the session:
+engine = create_engine(f'mysql+pymysql://Conny:{password}@localhost/nitrogen_networks')
+meta = MetaData(bind=engine)
+meta.reflect() 
+
+I changed it in the script.
+
+IDSeeqer.py:
+Line 98 - 109: I would keep it generic. If you want to add a default them maybe a more generic one or asking for an entry from the user. Since the final product will be open access through GitHub, I would rather not have my details in there.
+
+Line 242 - 249: This is where the user needs a bit more control over what to run through the pipeline. There a a few things that come to mind:
+(1) Do we want to overwrite existing entries? (q9 and q10) Y/N
+(2) Do we want to not collect any sequences for IDs that have already a protein sequence? (q9 and q10) y/n
+(3) Do we want to run just a subset of the data file? (q11)
+(4) Do we want to send the ID to the same URL again? (q20)
+
+I think since this depends on the User there needs to be an SQL interface for the user than comes up or needs to be filled out before running. If the user is not an sql person I guess we could formulate the questions as above and then construct the query for them.
+
+Overall: Would we want to make a package folder that only contains the scripts? Would this be neater? At the moment there is all sorts of things in the main IDseeqer folder.
+
+Also: I would keep the Seq-retrieval and the BLAST separate, I think you run one and then clean the data before proposing the species you want to target and setting up the second bit. So there will be another set up step for the user (choose species and some parameters for the BLAST ...will have to see which ones...)
+
+
+
+
+
+
+
+

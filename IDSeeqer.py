@@ -244,7 +244,8 @@ if __name__ == "__main__" :
 	q1 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
 	q9 = q1.where(settings.gfp_input_2019.c.seq_prot==None)
 	q10 = q9.where(settings.gfp_input_2019.c.seq_nucl==None)
-	#q20 = q10.where(settings.gfp_input_2019.c.errcol>1 )
+	#q11 = q10.where(settings.gfp_input_2019.c.id_paper1.like('PGS%'))
+	#q20 = q11.where(settings.gfp_input_2019.c.errcol==None )
 	qp = q10.limit(settings.gramene_params.chunk)
 
 	#I have to think about whether the query needs to change or how the user may want to interact with it.
