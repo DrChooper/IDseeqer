@@ -27,10 +27,25 @@ import NCBI_NUCL_Retrieval as ncbinucl
 import UniParc_Retrieval as uniparc
 #import Nuccore_Retrieval as nuccore
 
+import Blast_Retrieval
+
 import tkinter as tk
+from tkinter import ttk
 import tkinter.font as font
 
+from timeit import default_timer as timer
+
 delay = 2
+
+def Enter_Hit():
+	current_tab = tab_parent.select()
+	if(current_tab == '.!notebook.!frame') :
+		#print('Correct Tab')
+		b1.invoke()
+	else :
+		pass
+	#sys.exit()
+	
 
 def check_delay(delay) :
 	
@@ -85,13 +100,14 @@ def Cancel(root) :
 	
 
 
-def makeform(root, fields):
+def makeform(root, tab_parent, tab_connection, tab_query, fields):
 	global message
 	entries = {}
 	counter = 0
+	
 	for field in fields:
 		counter += 1
-		row = tk.Frame(root)
+		row = tk.Frame(tab_connection)
 		lab = tk.Label(row, width=13, text=field+": ", anchor='w')
 		ent = tk.Entry(row, width=50)
 		
@@ -114,7 +130,7 @@ def makeform(root, fields):
 		ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 		entries[field] = ent
 	
-	row = tk.Frame(root)
+	row = tk.Frame(tab_connection)
 	lab = tk.Label(row, width=13, text="Retrieval Delay:", anchor = 'w')
 	ent = tk.Entry(row, width=50)
 	ent.insert(0, "2")
@@ -123,16 +139,18 @@ def makeform(root, fields):
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 	entries['delay'] = ent
 	
-	row = tk.Frame(root)	
+	row = tk.Frame(tab_connection)	
 	arial10b= font.Font(family='Arial', size=10, weight='bold')
 	message = tk.Label(row, width=400, height=4, text="", anchor='w', font = arial10b, borderwidth=2, relief="groove")
 	row.pack(side=tk.TOP, padx=5, pady=15)
 	message.pack(side=tk.LEFT, padx=15, pady=15)
 	
+	
+	
 	return entries
 	
 def Get_Inputs() :
-	global root
+	global root, tab_parent, tab_connection, tab_query, tab_parameters, b1
 	fields = ('Host', 'Database', 'User', 'Password', 'Table')
 	
 	root = tk.Tk()
@@ -152,17 +170,30 @@ def Get_Inputs() :
 	root.title('IDSeeqer - [Input Parameters]')
 	root.resizable(False, False) # Window not resizable in both direction
 	
-	ents = makeform(root, fields)
+	tab_parent = ttk.Notebook(root)
+	tab_connection = ttk.Frame(tab_parent)
+	tab_query = ttk.Frame(tab_parent)
+	tab_parameters = ttk.Frame(tab_parent)
+	
+	ents = makeform(root, tab_parent, tab_connection, tab_query, fields)
 	
 	arial10b = font.Font(family='Arial', size=10, weight='bold')
 	
-	b1 = tk.Button(root, text='Process', command=(lambda e=ents: Correct_Inputs(root, e)), height = 2, width = 10, font = arial10b)
+	b1 = tk.Button(tab_connection, text='Process', command=(lambda e=ents: Correct_Inputs(root, e)), height = 2, width = 10, font = arial10b)
 	b1.pack(side=tk.LEFT, padx=15, pady=15)
 	
-	b2 = tk.Button(root, text='Cancel', command=(lambda : Cancel(root)), height = 2, width = 10, font = arial10b)
+	b2 = tk.Button(tab_connection, text='Cancel', command=(lambda : Cancel(root)), height = 2, width = 10, font = arial10b)
 	b2.pack(side=tk.RIGHT, padx=15, pady=15)
 	
-	root.bind('<Return>', (lambda e=ents, b1=b1: b1.invoke()))
+	#root.bind('<Return>', (lambda e=ents, b1=b1: b1.invoke()))
+	root.bind("<Return>", (lambda e=ents: Enter_Hit()))
+	
+	
+	tab_parent.add(tab_connection, text = " Connection ")
+	tab_parent.add(tab_query,      text = "   Query    ")
+	tab_parent.add(tab_parameters, text = " Parameters ")
+
+	tab_parent.pack(expand = 1, fill = 'both')
 	
 	#root.protocol("WM_DELETE_WINDOW", Cancel(root)) # Catch the close (X) button
 	
@@ -244,8 +275,7 @@ if __name__ == "__main__" :
 	q1 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
 	q9 = q1.where(settings.gfp_input_2019.c.seq_prot==None)
 	q10 = q9.where(settings.gfp_input_2019.c.seq_nucl==None)
-	#q11 = q10.where(settings.gfp_input_2019.c.id_paper1.like('PGS%'))
-	#q20 = q11.where(settings.gfp_input_2019.c.errcol==None )
+	#q20 = q10.where(settings.gfp_input_2019.c.errcol>1 )
 	qp = q10.limit(settings.gramene_params.chunk)
 
 	#I have to think about whether the query needs to change or how the user may want to interact with it.
@@ -264,38 +294,54 @@ if __name__ == "__main__" :
 	counter = 0
 	total = len(res)
 	
-	# Loop over all ids and search
-	for id_paper1 in res:
-		counter += 1
-		
-		#if(counter > 5) :  # The first 5 records, for testing.
-			#break
-		
-		
-		print("\n>>> Searching Item {} out of {}.".format(counter, total))
+	t0 = 0
+	acc_time = 0
 	
-		for fun in function_names :
+	# Loop over all ids and search
+	# for id_paper1 in res:
+		# counter += 1
+		
+		# #if(counter > 5) :  # The first 5 records, for testing.
+			# #break
+		
+		# t0 = timer()
+		
+		# if( acc_time != 0) :
+			# rem = (total - (counter - 1)) * (acc_time/(counter - 1))
+			# m_rem, s_rem = divmod(int(rem), 60)
+			# h_rem, m_rem = divmod(m_rem, 60)
 			
-			print("> Searching '{}' ...".format(display_names[fun].upper()))
-			if( Run_Function(fun, id_paper1, function_params[fun]) ) :
-				
-				# func is the last function in list where search was successful
-				# Remove the list
-				function_names.remove(fun)
-				# Now insert it at the beginning of the list.
-				function_names.insert(0, fun)
-				
-				time.sleep(delay) # Wait for delay seconds after successful retrieval
-				break 
-			else : 
-				max_fail -= 1
-		
-		
-		
-		if(max_fail <= 0) :
-			print("\n > Reached ", settings.gramene_params.fail_num, " fails.\nExitting !\n")
-			break
-		
+			# print("\n### APPROXIMATE TIME REMAINING: {:d}hour {:02d}min {:02d}s".format(h_rem, m_rem, s_rem))
 			
+			 	
+		# print("\n>>> Searching Item {} out of {}.".format(counter, total))
+	
+		# for fun in function_names :
+			
+			# print("> Searching '{}' ...".format(display_names[fun].upper()))
+			
+			# if( Run_Function(fun, id_paper1, function_params[fun]) ) :
+				
+				# # func is the last function in list where search was successful
+				# # Remove from the list
+				# function_names.remove(fun)
+				# # Now insert it at the beginning of the list.
+				# function_names.insert(0, fun)
+				
+				# time.sleep(delay) # Wait for delay seconds after successful retrieval
+				# break 
+			# else : 
+				# max_fail -= 1
+		
+		# temp_time = timer() - t0
+		# acc_time += temp_time
+		
+		# if(max_fail <= 0) :
+			# print("\n > Reached ", settings.gramene_params.fail_num, " fails.\nExitting !\n")
+			# break
+		
+	
+	# DO THE BLAST RETRIEVAL
+	Blast_Retrieval.Retrieval()
 				
 	print(' > Program Completed ')
