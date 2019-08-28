@@ -22,6 +22,7 @@ class Parameters:
 
 def init(args) :
 	global gfp_input_2019	
+	global species_list
 	global blast_input
 	global blast_chunk
 	global engine
@@ -32,13 +33,16 @@ def init(args) :
 	global rap_params
 	global uniparc_params
 	
-	blast_chunk = 1000
+	
 	
 	host = args[0]
 	database_name = args[1]
 	database_user = args[2]
 	database_password = args[3]
 	table_name = args[4]
+	taxa_table = args[5]
+	blast_chunk = int(args[6])
+	
 	
 		
 	#Set up connection to database
@@ -60,6 +64,9 @@ def init(args) :
 		
 		#define the blast table
 		blast_input = meta.tables[table_name]
+		
+		#define the taxa table
+		species_list = meta.tables[taxa_table]
 	
 	except Exception as e :
 		return e

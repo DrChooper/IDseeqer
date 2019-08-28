@@ -14,6 +14,8 @@ import platform
 from ftplib import FTP
 import subprocess
 
+import settings
+
 import Blast_Primer
 import Blast_Prot
 import Blast_Nucl
@@ -21,25 +23,6 @@ import Blast_Nucl
 release = 40
 seq_type = ["cdna", "pep"]
 
-host = "localhost" # or "127.0.0.1"
-database_name = "crop_pal2v2"
-database_user = "root"
-database_password = ""
-table_name = "taxa"
-
-#CONNECT TO DATA TABLE
-#Set up connection to database
-conn_string = "mysql+pymysql://" + database_user + ":" + database_password + "@" + host + "/" + database_name
-
-try :
-	engine = create_engine(conn_string)
-	# test connection
-	test = engine.execute(text("show variables like \"ver%\"")).fetchall()
-except Exception as e :
-	print("\nCAN NOT CONNECT TO DATABASE !")
-	sys.exit()
-	
-	
 def my_download(species_name, species_name2, taxaid, file_name, release, seqtype) :
 	
 	if(platform.system() == "Windows") :
@@ -85,21 +68,12 @@ def my_download(species_name, species_name2, taxaid, file_name, release, seqtype
 			#res = subprocess.run(["makeblastdb", "-in", "-", "-out", "blastdb"_+prefix+"_prot", "-input_type=fasta", "-dbtype prot", "-title "+species_name2])
 			
 		
-def Retrieval() :
+def Retrieval(taxa_chunk) :	
 
-	#extract the table information
+	q = select([settings.species_list.c.taxaid, settings.species_list.c.species_name, settings.species_list.c.species_name2])
+	q = q.limit(taxa_chunk)
 
-	meta = MetaData(bind=engine)
-	meta.reflect()
-	meta.tables.keys()
-
-	#define the table
-	species_list = meta.tables['taxa']
-
-	q = select([species_list.c.taxaid, species_list.c.species_name, species_list.c.species_name2])
-	#q = q.limit(2)
-
-	species=[[r.species_name, r.species_name2, r.taxaid] for r in engine.execute(q).fetchall()]
+	species=[[r.species_name, r.species_name2, r.taxaid] for r in settings.engine.execute(q).fetchall()]
 
 	cdna_fasta_files = []
 	pep_fasta_files = []
@@ -134,9 +108,14 @@ def Retrieval() :
 	for species_name, species_name2, taxaid, file_name in pep_fasta_files :
 		my_download(species_name, species_name2, taxaid, file_name, release, seq_type[1])	
 		
-		
+	
+	total = len(species)
+	counter = 0
 	# Now Retrieve info from BLAST
 	for species_name, species_name2, taxaid in species :
+		counter += 1
+		print("\n>>> BLAST is searching '{}', item {} out of {}.".format(taxaid, counter, total))
+		
 		print("\n > NOW SEARCHING BLAST_PRIMER FOR TAXA_ID: '{}'".format(taxaid))
 		Blast_Primer.Search_Blast(taxaid)
 		

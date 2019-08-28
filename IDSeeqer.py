@@ -3,7 +3,7 @@
 # The IDSeeqer.py script can be run directly from terminal like below:
 #
 # Run directly with parameters
-# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2]"
+# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2, 'taxa', 2, 1000]"
 #
 # Run without parameters to display GUI
 # python IDSeeqer.py
@@ -61,6 +61,8 @@ def Correct_Inputs(root, entries) :
 	global args
 	global proceed
 	global delay
+	global taxa_table
+	global taxa_chunk
 	
 	host = entries['Host'].get()
 	database_name = entries['Database'].get()
@@ -68,9 +70,13 @@ def Correct_Inputs(root, entries) :
 	user_password = entries['Password'].get()
 	table_name = entries['Table'].get()
 	
+	taxa_table = entries['taxa_table'].get()
+	taxa_chunk = int(entries['taxa_chunk'].get())
+	blast_chunk = int(entries['blast_chunk'].get())
 	
 	
-	args = [host, database_name, user_name, user_password, table_name]
+	
+	args = [host, database_name, user_name, user_password, table_name, taxa_table, blast_chunk]
 	
 	try :
 		delay = int(entries['delay'].get())
@@ -100,10 +106,41 @@ def Cancel(root) :
 	
 
 
-def makeform(root, tab_parent, tab_connection, tab_query, fields):
+def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	global message
 	entries = {}
 	counter = 0
+	
+	row = tk.Frame(tab_blast)
+	lab = tk.Label(row, width = 13, text="Taxa Table:", anchor="w")
+	ent = tk.Entry(row, width = 50)
+	ent.insert(0, "taxa")
+	row.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	entries['taxa_table'] = ent
+	
+	row = tk.Frame(tab_blast)
+	lab = tk.Label(row, width = 13, text="Taxa Chunk:", anchor="w")
+	ent = tk.Entry(row, width = 50)
+	ent.insert(0, 2)
+	row.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	entries['taxa_chunk'] = ent
+	
+	row = tk.Frame(tab_blast)
+	lab = tk.Label(row, width = 13, text="Blast Chunk:", anchor="w")
+	ent = tk.Entry(row, width = 50)
+	ent.insert(0, 1000)
+	row.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	entries['blast_chunk'] = ent
+	
+	
+	
+	
 	
 	for field in fields:
 		counter += 1
@@ -172,10 +209,10 @@ def Get_Inputs() :
 	
 	tab_parent = ttk.Notebook(root)
 	tab_connection = ttk.Frame(tab_parent)
-	tab_query = ttk.Frame(tab_parent)
+	tab_blast = ttk.Frame(tab_parent)
 	tab_parameters = ttk.Frame(tab_parent)
 	
-	ents = makeform(root, tab_parent, tab_connection, tab_query, fields)
+	ents = makeform(root, tab_parent, tab_connection, tab_blast, fields)
 	
 	arial10b = font.Font(family='Arial', size=10, weight='bold')
 	
@@ -190,7 +227,7 @@ def Get_Inputs() :
 	
 	
 	tab_parent.add(tab_connection, text = " Connection ")
-	tab_parent.add(tab_query,      text = "   Query    ")
+	tab_parent.add(tab_blast,      text = "   Blast    ")
 	tab_parent.add(tab_parameters, text = " Parameters ")
 
 	tab_parent.pack(expand = 1, fill = 'both')
@@ -236,7 +273,7 @@ if __name__ == "__main__" :
 		args = ast.literal_eval(sys.argv[1])
 		delay = int(args[5])
 		
-		if( not(type(args) is list) or (len(args) < 6) or (not check_delay(delay) ) ) :
+		if( not(type(args) is list) or (len(args) < 9) or (not check_delay(delay) ) ) :
 			#print("Please, provide host, database, user, password and table as input")
 			used_gui = True
 			Get_Inputs()
@@ -244,7 +281,14 @@ if __name__ == "__main__" :
 			#sys.exit()
 		else :
 			delay = args[5]
-			del args[5] 
+			taxa_table = args[6]
+			taxa_chunk = int(args[7])
+			blast_chunk = int(args[8])
+			
+			del args[5] # Remove delay
+			del args[6] # Remove taxa_chunk
+			
+			
 			proceed = True
 	except Exception as e: #(IndexError, SyntaxError) :
 		used_gui = True
@@ -342,6 +386,7 @@ if __name__ == "__main__" :
 		
 	
 	# DO THE BLAST RETRIEVAL
-	Blast_Retrieval.Retrieval()
+	Blast_Retrieval.Retrieval(taxa_chunk)
+	
 				
 	print(' > Program Completed ')
