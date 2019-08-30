@@ -3,7 +3,7 @@
 # The IDSeeqer.py script can be run directly from terminal like below:
 #
 # Run directly with parameters
-# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2, 'taxa', 2, 1000]"
+# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2, 'taxa', 40, 2, 1000]"
 #
 # Run without parameters to display GUI
 # python IDSeeqer.py
@@ -33,7 +33,11 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as font
 
+from tkinter import filedialog
+from tkinter import *
+
 from timeit import default_timer as timer
+
 
 delay = 2
 
@@ -71,12 +75,13 @@ def Correct_Inputs(root, entries) :
 	table_name = entries['Table'].get()
 	
 	taxa_table = entries['taxa_table'].get()
+	db_release = entries['database_release'].get()
 	taxa_chunk = int(entries['taxa_chunk'].get())
 	blast_chunk = int(entries['blast_chunk'].get())
 	
 	
 	
-	args = [host, database_name, user_name, user_password, table_name, taxa_table, blast_chunk]
+	args = [host, database_name, user_name, user_password, table_name, taxa_table, db_release, blast_chunk]
 	
 	try :
 		delay = int(entries['delay'].get())
@@ -104,15 +109,36 @@ def Cancel(root) :
 	proceed = False
 	root.destroy()
 	
-
+def browse_button():
+	# Allow user to select a directory and store it in global var
+	filename = filedialog.askdirectory(initialdir=os.getcwd(), title='Please select the directory of the Blast database.')
+	blast_folder.set(filename)
+	
+	
 
 def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	global message
+	global blast_folder
 	entries = {}
 	counter = 0
 	
+	# brow = tk.Frame(tab_blast)
+	# blast_folder = StringVar()
+	
+	# lab = tk.Label(brow, width=10, text="Blast Folder:", anchor="w")
+	# ent = tk.Entry(brow, width=50, textvariable=blast_folder)
+	# but = tk.Button(tab_blast, text="Browse", command=browse_button)
+	 
+	
+	# brow.pack(side=tk.TOP, padx=5, pady=10)
+	# lab.pack(side=tk.LEFT)
+	# ent.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
+	# but.place(in_=tab_blast, bordermode=OUTSIDE, height=30, width=50, x=445, y=5)
+	# entries['blast_folder'] = ent
+	
+	
 	row = tk.Frame(tab_blast)
-	lab = tk.Label(row, width = 13, text="Taxa Table:", anchor="w")
+	lab = tk.Label(row, width = 10, text="Taxa Table:", anchor="w")
 	ent = tk.Entry(row, width = 50)
 	ent.insert(0, "taxa")
 	row.pack(side=tk.TOP, padx=5, pady=10)
@@ -121,7 +147,16 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	entries['taxa_table'] = ent
 	
 	row = tk.Frame(tab_blast)
-	lab = tk.Label(row, width = 13, text="Taxa Chunk:", anchor="w")
+	lab = tk.Label(row, width = 10, text="DB Release:", anchor="w")
+	ent = tk.Entry(row, width = 50)
+	ent.insert(0, "40")
+	row.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	entries['database_release'] = ent
+	
+	row = tk.Frame(tab_blast)
+	lab = tk.Label(row, width = 10, text="Taxa Chunk:", anchor="w")
 	ent = tk.Entry(row, width = 50)
 	ent.insert(0, 2)
 	row.pack(side=tk.TOP, padx=5, pady=10)
@@ -130,15 +165,13 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	entries['taxa_chunk'] = ent
 	
 	row = tk.Frame(tab_blast)
-	lab = tk.Label(row, width = 13, text="Blast Chunk:", anchor="w")
+	lab = tk.Label(row, width = 10, text="Blast Chunk:", anchor="w")
 	ent = tk.Entry(row, width = 50)
 	ent.insert(0, 1000)
 	row.pack(side=tk.TOP, padx=5, pady=10)
 	lab.pack(side=tk.LEFT)
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 	entries['blast_chunk'] = ent
-	
-	
 	
 	
 	
@@ -181,6 +214,8 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	message = tk.Label(row, width=400, height=4, text="", anchor='w', font = arial10b, borderwidth=2, relief="groove")
 	row.pack(side=tk.TOP, padx=5, pady=15)
 	message.pack(side=tk.LEFT, padx=15, pady=15)
+	
+	
 	
 	
 	
@@ -273,7 +308,7 @@ if __name__ == "__main__" :
 		args = ast.literal_eval(sys.argv[1])
 		delay = int(args[5])
 		
-		if( not(type(args) is list) or (len(args) < 9) or (not check_delay(delay) ) ) :
+		if( not(type(args) is list) or (len(args) < 10) or (not check_delay(delay) ) ) :
 			#print("Please, provide host, database, user, password and table as input")
 			used_gui = True
 			Get_Inputs()
@@ -282,11 +317,12 @@ if __name__ == "__main__" :
 		else :
 			delay = args[5]
 			taxa_table = args[6]
-			taxa_chunk = int(args[7])
-			blast_chunk = int(args[8])
+			db_release = int(arg[7])
+			taxa_chunk = int(args[8])
+			blast_chunk = int(args[9])
 			
 			del args[5] # Remove delay
-			del args[6] # Remove taxa_chunk
+			del args[7] # Remove taxa_chunk
 			
 			
 			proceed = True

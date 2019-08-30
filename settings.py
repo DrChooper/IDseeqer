@@ -33,6 +33,8 @@ def init(args) :
 	global rap_params
 	global uniparc_params
 	
+	global db_release
+	
 	
 	
 	host = args[0]
@@ -41,7 +43,8 @@ def init(args) :
 	database_password = args[3]
 	table_name = args[4]
 	taxa_table = args[5]
-	blast_chunk = int(args[6])
+	db_release = int(args[6])
+	blast_chunk = int(args[7])
 	
 	
 		

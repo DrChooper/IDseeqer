@@ -20,7 +20,7 @@ import Blast_Primer
 import Blast_Prot
 import Blast_Nucl
 
-release = 40
+
 seq_type = ["cdna", "pep"]
 
 def my_download(species_name, species_name2, taxaid, file_name, release, seqtype) :
@@ -35,7 +35,7 @@ def my_download(species_name, species_name2, taxaid, file_name, release, seqtype
 	
 	if(os.path.isfile(file_name) == False) : # file does not it, download it
 		print("Please, wait while {} is downloaded.\n".format(file_name))
-		d_string = f'ftp://ftp.ensemblgenomes.org/pub/release-{release}/plants/fasta/{species_name}/{seqtype}/{file_name}'
+		d_string = f'ftp://ftp.ensemblgenomes.org/pub/release-{settings.db_release}/plants/fasta/{species_name}/{seqtype}/{file_name}'
 		
 		res = subprocess.run([mycurl, "-o", file_name, d_string], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		res = res.returncode
@@ -88,7 +88,7 @@ def Retrieval(taxa_chunk) :
 	for species_name, species_name2, taxaid in species:
 		print(species_name)
 		for i in range(len(seq_type)) :
-			URL_list = f'/pub/release-{release}/plants/fasta/{species_name}/{seq_type[i]}/' 
+			URL_list = f'/pub/release-{settings.db_release}/plants/fasta/{species_name}/{seq_type[i]}/' 
 			ftp.cwd(URL_list)
 			l=ftp.nlst()
 			next_file = [f for f in l if f.endswith('.all.fa.gz')][0]
@@ -102,11 +102,11 @@ def Retrieval(taxa_chunk) :
 
 	# Download CDNA Files and Build Blast
 	for species_name, species_name2, taxaid, file_name in cdna_fasta_files :
-		my_download(species_name, species_name2, taxaid, file_name, release, seq_type[0])
+		my_download(species_name, species_name2, taxaid, file_name, settings.db_release, seq_type[0])
 		
 	# Download PEP Files and Build Blast
 	for species_name, species_name2, taxaid, file_name in pep_fasta_files :
-		my_download(species_name, species_name2, taxaid, file_name, release, seq_type[1])	
+		my_download(species_name, species_name2, taxaid, file_name, settings.db_release, seq_type[1])	
 		
 	
 	total = len(species)
