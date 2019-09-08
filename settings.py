@@ -34,6 +34,7 @@ def init(args) :
 	global uniparc_params
 	
 	global db_release
+	global blast_folder
 	
 	
 	
@@ -45,8 +46,8 @@ def init(args) :
 	taxa_table = args[5]
 	db_release = int(args[6])
 	blast_chunk = int(args[7])
-	
-	
+	blast_folder = args[8] #.replace('\\','/')
+	#blast_folder = r'%s' %args[8]
 		
 	#Set up connection to database
 	try :

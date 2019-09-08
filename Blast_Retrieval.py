@@ -14,6 +14,8 @@ import platform
 from ftplib import FTP
 import subprocess
 
+from timeit import default_timer as timer
+
 import settings
 
 import Blast_Primer
@@ -32,10 +34,16 @@ def my_download(species_name, species_name2, taxaid, file_name, release, seqtype
 		mycurl = "curl"
 		mygzcat = "gzcat"
 		
+	working_dir = os.getcwd()
+	
+	# Change to Blast Directory
+	os.chdir(settings.blast_folder) 
+		
 	
 	if(os.path.isfile(file_name) == False) : # file does not it, download it
 		print("Please, wait while {} is downloaded.\n".format(file_name))
 		d_string = f'ftp://ftp.ensemblgenomes.org/pub/release-{settings.db_release}/plants/fasta/{species_name}/{seqtype}/{file_name}'
+		#d_string = "ftp://ftp.ensemblgenomes.org/pub/release-"+str(settings.db_release)+"/plants/fasta/"+str(species_name)+"/"+str(seqtype)+"/"+file_name
 		
 		res = subprocess.run([mycurl, "-o", file_name, d_string], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		res = res.returncode
@@ -67,6 +75,8 @@ def my_download(species_name, species_name2, taxaid, file_name, release, seqtype
 			#print("\nres = {}.\n".format(res))
 			#res = subprocess.run(["makeblastdb", "-in", "-", "-out", "blastdb"_+prefix+"_prot", "-input_type=fasta", "-dbtype prot", "-title "+species_name2])
 			
+	# Change directory back to working directory
+	os.chdir(working_dir) 
 		
 def Retrieval(taxa_chunk) :	
 
@@ -89,6 +99,7 @@ def Retrieval(taxa_chunk) :
 		print(species_name)
 		for i in range(len(seq_type)) :
 			URL_list = f'/pub/release-{settings.db_release}/plants/fasta/{species_name}/{seq_type[i]}/' 
+			#URL_list = "/pub/release-"+str(settings.db_release)+"/plants/fasta/"+str(species_name)+"/"+str(seq_type[i])+"/" 
 			ftp.cwd(URL_list)
 			l=ftp.nlst()
 			next_file = [f for f in l if f.endswith('.all.fa.gz')][0]
@@ -111,10 +122,31 @@ def Retrieval(taxa_chunk) :
 	
 	total = len(species)
 	counter = 0
+	
+	t0 = 0
+	acc_time = 0
+	
+	working_dir = os.getcwd()
+	
+	# First change to Blast Dir.
+	os.chdir(settings.blast_folder)
+	
 	# Now Retrieve info from BLAST
 	for species_name, species_name2, taxaid in species :
+	
 		counter += 1
-		print("\n>>> BLAST is searching '{}', item {} out of {}.".format(taxaid, counter, total))
+		
+		t0 = timer()
+		
+		if( acc_time != 0) :
+			rem = (total - (counter - 1)) * (acc_time/(counter - 1))
+			m_rem, s_rem = divmod(int(rem), 60)
+			h_rem, m_rem = divmod(m_rem, 60)
+			
+			print("\n### APPROX. TIME REMAINING: {:d}hour {:02d}min {:02d}s".format(h_rem, m_rem, s_rem))
+			
+		
+		print("\n>>> BLAST is searching item {} out of {} [id = '{}'].".format(counter, total, taxaid))
 		
 		print("\n > NOW SEARCHING BLAST_PRIMER FOR TAXA_ID: '{}'".format(taxaid))
 		Blast_Primer.Search_Blast(taxaid)
@@ -124,6 +156,21 @@ def Retrieval(taxa_chunk) :
 		
 		print("\n > NOW SEARCHING BLAST_NUCL FOR TAXA_ID: '{}'".format(taxaid))
 		Blast_Nucl.Search_Blast(taxaid)
+		
+		all_files = os.listdir()
+		for item in all_files :
+			if ( (item.endswith(".phr")) or (item.endswith(".pin")) or (item.endswith(".psq")) or \
+			     (item.endswith(".nhr")) or (item.endswith(".nin")) or (item.endswith(".nsq")) ) :
+				try :
+					os.remove(item)
+				except Exception :
+					pass
+		
+		temp_time = timer() - t0
+		acc_time += temp_time
+		
+	# Revert back to previous directory
+	os.chdir(working_dir)
 		
 
     

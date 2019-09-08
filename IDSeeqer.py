@@ -3,7 +3,7 @@
 # The IDSeeqer.py script can be run directly from terminal like below:
 #
 # Run directly with parameters
-# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2, 'taxa', 40, 2, 1000]"
+# python IDSeeqer.py "['localhost', 'crop_pal2v2', 'user', 'password', 'test_idseeqer_temp', 2, 'taxa', 40, 2, 1000, 'full path to blast folder']"
 #
 # Run without parameters to display GUI
 # python IDSeeqer.py
@@ -45,7 +45,7 @@ def Enter_Hit():
 	current_tab = tab_parent.select()
 	if(current_tab == '.!notebook.!frame') :
 		#print('Correct Tab')
-		b1.invoke()
+		but_process.invoke()
 	else :
 		pass
 	#sys.exit()
@@ -67,6 +67,7 @@ def Correct_Inputs(root, entries) :
 	global delay
 	global taxa_table
 	global taxa_chunk
+	global program_to_run
 	
 	host = entries['Host'].get()
 	database_name = entries['Database'].get()
@@ -79,9 +80,19 @@ def Correct_Inputs(root, entries) :
 	taxa_chunk = int(entries['taxa_chunk'].get())
 	blast_chunk = int(entries['blast_chunk'].get())
 	
+	program_to_run = entries['program'].get()
 	
 	
-	args = [host, database_name, user_name, user_password, table_name, taxa_table, db_release, blast_chunk]
+	blast_folder = entries['blast_folder'].get()
+	
+	blast_folder = blast_folder.strip()
+	if (not os.path.isdir(blast_folder)) :
+		message.config(text="Can not find the Blast folder you provided !", fg = 'red')
+		return -1
+	
+	Save_Blast_Folder(blast_folder)
+	
+	args = [host, database_name, user_name, user_password, table_name, taxa_table, db_release, blast_chunk, blast_folder]
 	
 	try :
 		delay = int(entries['delay'].get())
@@ -103,6 +114,8 @@ def Correct_Inputs(root, entries) :
 	
 	root.destroy()
 	
+	return
+	
 	
 def Cancel(root) :
 	global proceed
@@ -111,30 +124,59 @@ def Cancel(root) :
 	
 def browse_button():
 	# Allow user to select a directory and store it in global var
-	filename = filedialog.askdirectory(initialdir=os.getcwd(), title='Please select the directory of the Blast database.')
+	
+	filename = filedialog.askdirectory(initialdir=init_blast_folder, title='Please select the directory of the Blast database.')
 	blast_folder.set(filename)
+	
+def Get_Blast_Folder() :
+	if(os.path.isfile("init.dat")) :
+		pf = open("init.dat", "r")
+		init_blast_folder = pf.readline()
+		pf.close()
+		if (len(init_blast_folder.strip()) < 3) :
+			init_blast = os.getcwd()
+			
+		return init_blast_folder
+	
+	else :
+		init_blast_folder = os.getcwd()
+		return init_blast_folder
+
+def Save_Blast_Folder(the_line) :
+	try :
+		pf = open("init.dat", "w")
+		pf.write(the_line)
+		pf.close()
+	except Exception :
+		pass
 	
 	
 
 def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	global message
 	global blast_folder
+	global init_blast_folder
 	entries = {}
 	counter = 0
 	
-	# brow = tk.Frame(tab_blast)
-	# blast_folder = StringVar()
+	blast_folder = StringVar()
 	
-	# lab = tk.Label(brow, width=10, text="Blast Folder:", anchor="w")
-	# ent = tk.Entry(brow, width=50, textvariable=blast_folder)
-	# but = tk.Button(tab_blast, text="Browse", command=browse_button)
+	init_blast_folder = Get_Blast_Folder()
+		
+	brow = tk.Frame(tab_blast)
+	
+	
+	lab = tk.Label(brow, width=10, text="Blast Folder:", anchor="w")
+	ent = tk.Entry(brow, width=50, textvariable=blast_folder)
+	but = tk.Button(tab_blast, text="Browse", command=browse_button)
 	 
 	
-	# brow.pack(side=tk.TOP, padx=5, pady=10)
-	# lab.pack(side=tk.LEFT)
-	# ent.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
-	# but.place(in_=tab_blast, bordermode=OUTSIDE, height=30, width=50, x=445, y=5)
-	# entries['blast_folder'] = ent
+	brow.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
+	ent.insert(0, init_blast_folder)
+	but.place(in_=tab_blast, bordermode=OUTSIDE, height=30, width=50, x=445, y=5)
+	entries['blast_folder'] = ent
 	
 	
 	row = tk.Frame(tab_blast)
@@ -158,7 +200,7 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	row = tk.Frame(tab_blast)
 	lab = tk.Label(row, width = 10, text="Taxa Chunk:", anchor="w")
 	ent = tk.Entry(row, width = 50)
-	ent.insert(0, 2)
+	ent.insert(0, 1000)
 	row.pack(side=tk.TOP, padx=5, pady=10)
 	lab.pack(side=tk.LEFT)
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
@@ -173,6 +215,15 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 	entries['blast_chunk'] = ent
 	
+	row = tk.Frame(tab_connection)
+	lab = tk.Label(row, width=13, text="Program To Run:", anchor = "w")
+	cb  = ttk.Combobox(row,values=["Sequence Retrieval", "Blast Search"],width=47)
+	row.pack(side=tk.TOP, padx=5, pady=10)
+	lab.pack(side=tk.LEFT)
+	cb.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	cb.current(0)
+	
+	entries['program'] = cb	
 	
 	
 	for field in fields:
@@ -215,20 +266,16 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	row.pack(side=tk.TOP, padx=5, pady=15)
 	message.pack(side=tk.LEFT, padx=15, pady=15)
 	
-	
-	
-	
-	
 	return entries
 	
 def Get_Inputs() :
-	global root, tab_parent, tab_connection, tab_query, tab_parameters, b1
+	global root, tab_parent, tab_connection, tab_query, tab_parameters, but_process
 	fields = ('Host', 'Database', 'User', 'Password', 'Table')
 	
 	root = tk.Tk()
 	
 	width = 500
-	height = 470
+	height = 520
 	
 	# get screen width and height
 	screen_width = root.winfo_screenwidth()
@@ -251,15 +298,14 @@ def Get_Inputs() :
 	
 	arial10b = font.Font(family='Arial', size=10, weight='bold')
 	
-	b1 = tk.Button(tab_connection, text='Process', command=(lambda e=ents: Correct_Inputs(root, e)), height = 2, width = 10, font = arial10b)
-	b1.pack(side=tk.LEFT, padx=15, pady=15)
+	but_process = tk.Button(tab_connection, default='active', text='Process', command=(lambda e=ents: Correct_Inputs(root, e)), height = 2, width = 10, font = arial10b)
+	but_process.pack(side=tk.LEFT, padx=15, pady=15)
 	
-	b2 = tk.Button(tab_connection, text='Cancel', command=(lambda : Cancel(root)), height = 2, width = 10, font = arial10b)
-	b2.pack(side=tk.RIGHT, padx=15, pady=15)
+	but_cancel = tk.Button(tab_connection, text='Cancel', command=(lambda : Cancel(root)), height = 2, width = 10, font = arial10b)
+	but_cancel.pack(side=tk.RIGHT, padx=15, pady=15)
 	
-	#root.bind('<Return>', (lambda e=ents, b1=b1: b1.invoke()))
+	#root.bind('<Return>', (lambda e=ents, but_process=but_process: but_process.invoke()))
 	root.bind("<Return>", (lambda e=ents: Enter_Hit()))
-	
 	
 	tab_parent.add(tab_connection, text = " Connection ")
 	tab_parent.add(tab_blast,      text = "   Blast    ")
@@ -308,7 +354,7 @@ if __name__ == "__main__" :
 		args = ast.literal_eval(sys.argv[1])
 		delay = int(args[5])
 		
-		if( not(type(args) is list) or (len(args) < 10) or (not check_delay(delay) ) ) :
+		if( not(type(args) is list) or (len(args) < 11) or (not check_delay(delay) ) ) :
 			#print("Please, provide host, database, user, password and table as input")
 			used_gui = True
 			Get_Inputs()
@@ -371,58 +417,59 @@ if __name__ == "__main__" :
 
 	max_fail = settings.gramene_params.fail_num
 	
-	counter = 0
-	total = len(res)
-	
-	t0 = 0
-	acc_time = 0
-	
-	# Loop over all ids and search
-	# for id_paper1 in res:
-		# counter += 1
+	if (program_to_run == "Sequence Retrieval") :
+		counter = 0
+		total = len(res)
 		
-		# #if(counter > 5) :  # The first 5 records, for testing.
-			# #break
+		t0 = 0
+		acc_time = 0
 		
-		# t0 = timer()
-		
-		# if( acc_time != 0) :
-			# rem = (total - (counter - 1)) * (acc_time/(counter - 1))
-			# m_rem, s_rem = divmod(int(rem), 60)
-			# h_rem, m_rem = divmod(m_rem, 60)
+		# Loop over all ids and search
+		for id_paper1 in res:
+			counter += 1
 			
-			# print("\n### APPROXIMATE TIME REMAINING: {:d}hour {:02d}min {:02d}s".format(h_rem, m_rem, s_rem))
+			#if(counter > 5) :  # The first 5 records, for testing.
+				#break
 			
-			 	
-		# print("\n>>> Searching Item {} out of {}.".format(counter, total))
-	
-		# for fun in function_names :
+			t0 = timer()
 			
-			# print("> Searching '{}' ...".format(display_names[fun].upper()))
-			
-			# if( Run_Function(fun, id_paper1, function_params[fun]) ) :
+			if( acc_time != 0) :
+				rem = (total - (counter - 1)) * (acc_time/(counter - 1))
+				m_rem, s_rem = divmod(int(rem), 60)
+				h_rem, m_rem = divmod(m_rem, 60)
 				
-				# # func is the last function in list where search was successful
-				# # Remove from the list
-				# function_names.remove(fun)
-				# # Now insert it at the beginning of the list.
-				# function_names.insert(0, fun)
+				print("\n### APPROX. TIME REMAINING: {:d}hour {:02d}min {:02d}s".format(h_rem, m_rem, s_rem))
 				
-				# time.sleep(delay) # Wait for delay seconds after successful retrieval
-				# break 
-			# else : 
-				# max_fail -= 1
+					
+			print("\n>>> Searching Item {} out of {}.".format(counter, total))
 		
-		# temp_time = timer() - t0
-		# acc_time += temp_time
-		
-		# if(max_fail <= 0) :
-			# print("\n > Reached ", settings.gramene_params.fail_num, " fails.\nExitting !\n")
-			# break
-		
-	
-	# DO THE BLAST RETRIEVAL
-	Blast_Retrieval.Retrieval(taxa_chunk)
+			for fun in function_names :
+				
+				print("> Searching '{}' ...".format(display_names[fun].upper()))
+				
+				if( Run_Function(fun, id_paper1, function_params[fun]) ) :
+					
+					# func is the last function in list where search was successful
+					# Remove from the list
+					function_names.remove(fun)
+					# Now insert it at the beginning of the list.
+					function_names.insert(0, fun)
+					
+					time.sleep(delay) # Wait for delay seconds after successful retrieval
+					break 
+				else : 
+					max_fail -= 1
+			
+			temp_time = timer() - t0
+			acc_time += temp_time
+			
+			if(max_fail <= 0) :
+				print("\n > Reached ", settings.gramene_params.fail_num, " fails.\nExitting !\n")
+				break
+			
+	elif (program_to_run == "Blast Search") :
+		# DO THE BLAST RETRIEVAL
+		Blast_Retrieval.Retrieval(taxa_chunk)
 	
 				
 	print(' > Program Completed ')

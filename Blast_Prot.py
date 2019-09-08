@@ -47,6 +47,12 @@ def Search_Blast(taxaid) :
 	header = [h.strip() for h in header]
 	df = pd.read_csv("prot_"+taxaid+".tsv",header = 0, sep = "\t", names=header)#ENTER THE taxa here
 
+	try :
+		os.remove("query_prot_" + taxaid + ".fasta")
+		os.remove("prot_" + taxaid + ".tsv")
+	except Exception as e :
+		pass
+
 	if len(df) == 0:
 		print("Could not find any hits in the blast database for the ",len(rec)," records.")
 
