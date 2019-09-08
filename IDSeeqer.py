@@ -50,6 +50,7 @@ def Enter_Hit():
 		pass
 	#sys.exit()
 	
+	
 
 def check_delay(delay) :
 	
@@ -133,14 +134,13 @@ def Get_Blast_Folder() :
 		pf = open("init.dat", "r")
 		init_blast_folder = pf.readline()
 		pf.close()
-		if (len(init_blast_folder.strip()) < 3) :
+		if (not os.path.isdir(init_blast_folder)) :
 			init_blast = os.getcwd()
 			
-		return init_blast_folder
-	
 	else :
 		init_blast_folder = os.getcwd()
-		return init_blast_folder
+		
+	return init_blast_folder
 
 def Save_Blast_Folder(the_line) :
 	try :
@@ -353,8 +353,10 @@ if __name__ == "__main__" :
 	try :
 		args = ast.literal_eval(sys.argv[1])
 		delay = int(args[5])
+		blast_folder = args[10].strip()
 		
-		if( not(type(args) is list) or (len(args) < 11) or (not check_delay(delay) ) ) :
+		if( not(type(args) is list) or (len(args) < 11) or (not check_delay(delay) ) or \
+			(not os.path.isdir(blast_folder)) )  :
 			#print("Please, provide host, database, user, password and table as input")
 			used_gui = True
 			Get_Inputs()
