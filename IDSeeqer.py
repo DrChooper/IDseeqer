@@ -135,7 +135,7 @@ def Get_Blast_Folder() :
 		init_blast_folder = pf.readline()
 		pf.close()
 		if (not os.path.isdir(init_blast_folder)) :
-			init_blast = os.getcwd()
+			init_blast_folder = os.getcwd()
 			
 	else :
 		init_blast_folder = os.getcwd()
