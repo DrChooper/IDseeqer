@@ -164,8 +164,6 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	init_blast_folder = Get_Blast_Folder()
 		
 	brow = tk.Frame(tab_blast)
-	
-	
 	lab = tk.Label(brow, width=10, text="Blast Folder:", anchor="w")
 	ent = tk.Entry(brow, width=50, textvariable=blast_folder)
 	but = tk.Button(tab_blast, text="Browse", command=browse_button)
@@ -217,7 +215,7 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	
 	row = tk.Frame(tab_connection)
 	lab = tk.Label(row, width=13, text="Program To Run:", anchor = "w")
-	cb  = ttk.Combobox(row,values=["Sequence Retrieval", "Blast Search"],width=47)
+	cb  = ttk.Combobox(row, state="readonly", values=["Sequence Retrieval", "Blast Search"],width=47)
 	row.pack(side=tk.TOP, padx=5, pady=10)
 	lab.pack(side=tk.LEFT)
 	cb.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
