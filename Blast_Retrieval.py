@@ -157,17 +157,17 @@ def Retrieval(taxa_chunk) :
 		print("\n > NOW SEARCHING BLAST_NUCL FOR TAXA_ID: '{}'".format(taxaid))
 		Blast_Nucl.Search_Blast(taxaid)
 		
-		all_files = os.listdir()
-		for item in all_files :
-			if ( (item.endswith(".phr")) or (item.endswith(".pin")) or (item.endswith(".psq")) or \
-			     (item.endswith(".nhr")) or (item.endswith(".nin")) or (item.endswith(".nsq")) ) :
-				try :
-					os.remove(item)
-				except Exception :
-					pass
-		
 		temp_time = timer() - t0
 		acc_time += temp_time
+		
+	all_files = os.listdir()
+	for item in all_files :
+		if ( (item.endswith(".phr")) or (item.endswith(".pin")) or (item.endswith(".psq")) or \
+			 (item.endswith(".nhr")) or (item.endswith(".nin")) or (item.endswith(".nsq")) ) :
+			try :
+				os.remove(item)
+			except Exception :
+				pass
 		
 	# Revert back to previous directory
 	os.chdir(working_dir)
