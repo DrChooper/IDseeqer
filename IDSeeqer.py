@@ -457,8 +457,8 @@ if __name__ == "__main__" :
 					
 					time.sleep(delay) # Wait for delay seconds after successful retrieval
 					break 
-				else : 
-					max_fail -= 1
+			else : 
+				max_fail -= 1
 			
 			temp_time = timer() - t0
 			acc_time += temp_time
