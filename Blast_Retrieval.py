@@ -62,18 +62,18 @@ def my_download(species_name, species_name2, taxaid, file_name, release, seqtype
 		#res = subprocess.run([mygzcat, file_name], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		#res = res.returncode
 		
-		if(res == 0) :
-			if(seqtype == seq_type[0]) : #CDNA
-				d_string += " |makeblastdb -in - -out blastdb_" + prefix + "_nucl -input_type=fasta -dbtype nucl -title " + species_name2
-				
+		if(seqtype == seq_type[0]) : #CDNA
+			d_string += " |makeblastdb -in - -out blastdb_" + prefix + "_nucl -input_type=fasta -dbtype nucl -title " + species_name2
 			
-			elif(seqtype == seq_type[1]) : #PEP
-				d_string += " |makeblastdb -in - -out bastdb_" + prefix + "_prot -input_type=fasta -dbtype prot -title " + species_name2
-			
-			print(d_string)
-			res2 = os.system(d_string)
-			#print("\nres = {}.\n".format(res))
-			#res = subprocess.run(["makeblastdb", "-in", "-", "-out", "blastdb"_+prefix+"_prot", "-input_type=fasta", "-dbtype prot", "-title "+species_name2])
+		
+		elif(seqtype == seq_type[1]) : #PEP
+			d_string += " |makeblastdb -in - -out bastdb_" + prefix + "_prot -input_type=fasta -dbtype prot -title " + species_name2
+		
+		print(d_string)
+		res2 = os.system(d_string)
+		
+		#print("\nres = {}.\n".format(res))
+		#res = subprocess.run(["makeblastdb", "-in", "-", "-out", "blastdb"_+prefix+"_prot", "-input_type=fasta", "-dbtype prot", "-title "+species_name2])
 			
 	# Change directory back to working directory
 	os.chdir(working_dir) 
