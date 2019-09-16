@@ -70,6 +70,7 @@ def Correct_Inputs(root, entries) :
 	global taxa_chunk
 	global program_to_run
 	
+	program_to_run = entries['program'].get()
 	host = entries['Host'].get()
 	database_name = entries['Database'].get()
 	user_name = entries['User'].get()
@@ -81,7 +82,7 @@ def Correct_Inputs(root, entries) :
 	taxa_chunk = int(entries['taxa_chunk'].get())
 	blast_chunk = int(entries['blast_chunk'].get())
 	
-	program_to_run = entries['program'].get()
+	max_fail = int(entries['max_fail'].get())	
 	
 	
 	blast_folder = entries['blast_folder'].get()
@@ -93,7 +94,7 @@ def Correct_Inputs(root, entries) :
 	
 	Save_Blast_Folder(blast_folder)
 	
-	args = [host, database_name, user_name, user_password, table_name, taxa_table, db_release, blast_chunk, blast_folder]
+	args = [host, database_name, user_name, user_password, table_name, taxa_table, db_release, blast_chunk, blast_folder, max_fail]
 	
 	try :
 		delay = int(entries['delay'].get())
@@ -163,6 +164,8 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	
 	init_blast_folder = Get_Blast_Folder()
 		
+	# Prepare the Blast Tab.
+	
 	brow = tk.Frame(tab_blast)
 	lab = tk.Label(brow, width=10, text="Blast Folder:", anchor="w")
 	ent = tk.Entry(brow, width=50, textvariable=blast_folder)
@@ -213,6 +216,8 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 	entries['blast_chunk'] = ent
 	
+	# Prepare the Connection Tab.
+	
 	row = tk.Frame(tab_connection)
 	lab = tk.Label(row, width=13, text="Program To Run:", anchor = "w")
 	cb  = ttk.Combobox(row, state="readonly", values=["Sequence Retrieval", "Blast Search"],width=47)
@@ -222,6 +227,17 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	cb.current(0)
 	
 	entries['program'] = cb	
+	
+	# Prepare the Parameters Tab.
+	
+	row = tk.Frame(tab_parameters)
+	lab = tk.Label(row, width=13, text="Max Fails:", anchor='w')
+	ent = tk.Entry(row, width=50)
+	ent.insert(0, "800")
+	row.pack(side=tk.TOP, padx=5, pady=15)
+	lab.pack(side=tk.LEFT)
+	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
+	entries['max_fail'] = ent
 	
 	
 	for field in fields:
@@ -353,7 +369,7 @@ if __name__ == "__main__" :
 		delay = int(args[5])
 		blast_folder = args[10].strip()
 		
-		if( not(type(args) is list) or (len(args) < 11) or (not check_delay(delay) ) or \
+		if( not(type(args) is list) or (len(args) < 12) or (not check_delay(delay) ) or \
 			(not os.path.isdir(blast_folder)) )  :
 			#print("Please, provide host, database, user, password and table as input")
 			used_gui = True
@@ -416,6 +432,7 @@ if __name__ == "__main__" :
 	
 
 	max_fail = settings.gramene_params.fail_num
+	
 	
 	if (program_to_run == "Sequence Retrieval") :
 		counter = 0

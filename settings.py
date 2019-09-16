@@ -46,8 +46,8 @@ def init(args) :
 	taxa_table = args[5]
 	db_release = int(args[6])
 	blast_chunk = int(args[7])
-	blast_folder = args[8] #.replace('\\','/')
-	#blast_folder = r'%s' %args[8]
+	blast_folder = args[8] 
+	
 		
 	#Set up connection to database
 	try :
@@ -79,6 +79,7 @@ def init(args) :
 	
 	### define errors
 	gramene_params = Parameters()
+	gramene_params.fail_num = int(args[9])
 
 	uniprot_params = Parameters()
 	uniprot_params.chunk = 5000 #how many ids in the run limit
