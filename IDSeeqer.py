@@ -70,6 +70,7 @@ def Correct_Inputs(root, entries) :
 	global taxa_chunk
 	global program_to_run
 	
+	
 	program_to_run = entries['program'].get()
 	host = entries['Host'].get()
 	database_name = entries['Database'].get()
@@ -239,6 +240,26 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	ent.pack(side=tk.RIGHT, expand=tk.YES, fill=tk.X)
 	entries['max_fail'] = ent
 	
+	# Prepare the Queries Tab.
+	global query_var
+	query_var = IntVar()
+	query_var.set(1)
+	
+	group = LabelFrame(tab_queries, text=" Sequence Retrieval Query ",  padx=5, pady=5)
+	
+	R1 = Radiobutton(group, text="Run only new entries", width=30, variable=query_var, value=1, anchor='w')
+
+	R2 = Radiobutton(group, text="Run all that have no sequence", width=30, variable=query_var, value=2, anchor='w')
+	
+	R3 = Radiobutton(group, text="Run all and overwrite", width=30, variable=query_var, value=3, anchor='w')
+	
+	group.pack(side=tk.TOP, padx=5, pady=15, fill=tk.X)
+	R1.pack(fill=tk.X)
+	R2.pack(fill=tk.X)
+	R3.pack(fill=tk.X)
+	
+	
+	# Prepare the Connection Tab.
 	
 	for field in fields:
 		counter += 1
@@ -283,7 +304,7 @@ def makeform(root, tab_parent, tab_connection, tab_blast, fields):
 	return entries
 	
 def Get_Inputs() :
-	global root, tab_parent, tab_connection, tab_query, tab_parameters, but_process
+	global root, tab_parent, tab_connection, tab_queries, tab_parameters, but_process
 	fields = ('Host', 'Database', 'User', 'Password', 'Table')
 	
 	root = tk.Tk()
@@ -307,6 +328,7 @@ def Get_Inputs() :
 	tab_connection = ttk.Frame(tab_parent)
 	tab_blast = ttk.Frame(tab_parent)
 	tab_parameters = ttk.Frame(tab_parent)
+	tab_queries = ttk.Frame(tab_parent)
 	
 	ents = makeform(root, tab_parent, tab_connection, tab_blast, fields)
 	
@@ -324,6 +346,7 @@ def Get_Inputs() :
 	tab_parent.add(tab_connection, text = " Connection ")
 	tab_parent.add(tab_blast,      text = "   Blast    ")
 	tab_parent.add(tab_parameters, text = " Parameters ")
+	tab_parent.add(tab_queries,    text = "   Queries  ")
 
 	tab_parent.pack(expand = 1, fill = 'both')
 	
@@ -413,13 +436,28 @@ if __name__ == "__main__" :
 	print("\n> SUCCESSFUL CONNECTION TO DATABASE.")
 	
 	###Define the nucleotide query that reoccurs after every target 
+	query_var = query_var.get()
+	
 	q0 = select([settings.gfp_input_2019.c.id_paper1.distinct()])
-	q1 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
-	q9 = q1.where(settings.gfp_input_2019.c.seq_prot==None)
-	q10 = q9.where(settings.gfp_input_2019.c.seq_nucl==None)
-	#q20 = q10.where(settings.gfp_input_2019.c.errcol>1 )
-	qp = q10.limit(settings.gramene_params.chunk)
-
+	q0 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
+	
+	if (query_var == 1) :
+		q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
+		q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
+		q0 = q0.where(settings.gfp_input_2019.c.seq_source==None)
+		q0 = q0.where(settings.gfp_input_2019.c.errcol==None )
+	elif (query_var == 2) :
+		q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
+		q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
+	elif (query_var == 3) :
+		pass
+	else :
+		print("\n> UNKNOWN QUERY... TERMINATING.")
+		sys.exit(747)
+		
+	
+	qp = q0.limit(settings.gramene_params.chunk)
+	
 	#I have to think about whether the query needs to change or how the user may want to interact with it.
 
 	res=[r.id_paper1 for r in settings.engine.execute(qp).fetchall()]
@@ -433,10 +471,12 @@ if __name__ == "__main__" :
 
 	max_fail = settings.gramene_params.fail_num
 	
+	total = len(res)
+	print(f"\n> FOUND {total} PAPERS MATCHING CRITERIA.")
+	
 	
 	if (program_to_run == "Sequence Retrieval") :
 		counter = 0
-		total = len(res)
 		
 		t0 = 0
 		acc_time = 0
@@ -489,4 +529,4 @@ if __name__ == "__main__" :
 		Blast_Retrieval.Retrieval(taxa_chunk)
 	
 				
-	print(' > Program Completed ')
+	print('\n> Program Completed !')
