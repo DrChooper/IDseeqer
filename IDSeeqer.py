@@ -435,47 +435,50 @@ if __name__ == "__main__" :
 
 	print("\n> SUCCESSFUL CONNECTION TO DATABASE.")
 	
-	###Define the nucleotide query that reoccurs after every target 
-	query_var = query_var.get()
 	
-	q0 = select([settings.gfp_input_2019.c.id_paper1.distinct()])
-	q0 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
-	
-	if (query_var == 1) :
-		q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
-		q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
-		q0 = q0.where(settings.gfp_input_2019.c.seq_source==None)
-		q0 = q0.where(settings.gfp_input_2019.c.errcol==None )
-	elif (query_var == 2) :
-		q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
-		q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
-	elif (query_var == 3) :
-		pass
-	else :
-		print("\n> UNKNOWN QUERY... TERMINATING.")
-		sys.exit(747)
-		
-	
-	qp = q0.limit(settings.gramene_params.chunk)
-	
-	#I have to think about whether the query needs to change or how the user may want to interact with it.
-
-	res=[r.id_paper1 for r in settings.engine.execute(qp).fetchall()]
-	
-	
-	function_params = {uniprot.search_id : settings.uniprot_params, ncbiprot.search_id : settings.ncbiprot_params,
-				   gramene.search_id : settings.gramene_params, uniparc.search_id : settings.uniparc_params, 
-				   rap.search_id : settings.rap_params, ncbinucl.search_id : settings.ncbinucl_params}
-		
-	
-
-	max_fail = settings.gramene_params.fail_num
-	
-	total = len(res)
-	print(f"\n> FOUND {total} PAPERS MATCHING CRITERIA.")
 	
 	
 	if (program_to_run == "Sequence Retrieval") :
+	
+		###Define the nucleotide query that reoccurs after every target 
+		query_var = query_var.get()
+		
+		q0 = select([settings.gfp_input_2019.c.id_paper1.distinct()])
+		q0 = q0.where(settings.gfp_input_2019.c.id_paper1!=None)
+		
+		if (query_var == 1) :
+			q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
+			q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
+			q0 = q0.where(settings.gfp_input_2019.c.seq_source==None)
+			q0 = q0.where(settings.gfp_input_2019.c.errcol==None )
+		elif (query_var == 2) :
+			q0 = q0.where(settings.gfp_input_2019.c.seq_prot==None)
+			q0 = q0.where(settings.gfp_input_2019.c.seq_nucl==None)
+		elif (query_var == 3) :
+			pass
+		else :
+			print("\n> UNKNOWN QUERY... TERMINATING.")
+			sys.exit(747)
+			
+		
+		qp = q0.limit(settings.gramene_params.chunk)
+		
+		#I have to think about whether the query needs to change or how the user may want to interact with it.
+
+		res=[r.id_paper1 for r in settings.engine.execute(qp).fetchall()]
+		
+		
+		function_params = {uniprot.search_id : settings.uniprot_params, ncbiprot.search_id : settings.ncbiprot_params,
+					   gramene.search_id : settings.gramene_params, uniparc.search_id : settings.uniparc_params, 
+					   rap.search_id : settings.rap_params, ncbinucl.search_id : settings.ncbinucl_params}
+			
+		
+
+		max_fail = settings.gramene_params.fail_num
+		
+		total = len(res)
+		print(f"\n> FOUND {total} PAPERS MATCHING CRITERIA.")
+		
 		counter = 0
 		
 		t0 = 0
